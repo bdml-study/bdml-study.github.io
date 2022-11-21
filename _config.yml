@@ -18,7 +18,7 @@ description: "BDML 세미나 정리 블로그"
 baseurl: ""
 
 # The base hostname & protocol of your site for where absolute urls are needed.
-url: "https://bdml-study.github.io"
+url: "https://bdml-study.github.io/"
 
 # Favicon
 favicon: images/favicon.png
