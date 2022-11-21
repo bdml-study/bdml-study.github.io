@@ -3,6 +3,7 @@ layout: page
 title: BDML 소개
 description: An optional about page for Scriptor Jekyll theme
 feature_image: images/about.png
+author: BDML
 ---
 
 [연구실 홈페이지](https://nongaussian.github.io/#firstPage)
