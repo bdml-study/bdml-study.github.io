@@ -3,10 +3,10 @@
     <channel>
         <title>Big Data Mining Lab</title>
         <description>BDML 세미나 정리 블로그</description>
-        <link>http://localhost:4000//</link>
+        <link>http://localhost:4000/</link>
         <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-        <pubDate>Mon, 21 Nov 2022 20:15:48 +0900</pubDate>
-        <lastBuildDate>Mon, 21 Nov 2022 20:15:48 +0900</lastBuildDate>
+        <pubDate>Mon, 21 Nov 2022 20:33:32 +0900</pubDate>
+        <lastBuildDate>Mon, 21 Nov 2022 20:33:32 +0900</lastBuildDate>
         <generator>Jekyll v4.0.1</generator>
         
             <item>

@@ -31,9 +31,9 @@ navigation:
   - text: Home
     url: /
   - text: About
-    url: /about/
+    url: /about
   # - text: Style Guide
-  #   url: /style-guide/
+  #   url: /style-guide
   - text: GitHub
     url: https://github.com/hyerica-bdml
     # url: https://github.com/JustGoodThemes/Scriptor-Jekyll-Theme
