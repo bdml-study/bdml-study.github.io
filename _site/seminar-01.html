@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
+  
+  <script type="text/x-mathjax-config">
+	MathJax.Hub.Config({
+	  jax: ["input/TeX","input/MathML","output/SVG", "output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","MathMenu.js","MathZoom.js", "CHTML-preview.js"],
+  TeX: {
+	extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"]
+  },
+	tex2jax: {
+		inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+		displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+		processEscapes: true,
+		processEnvironments: true
+	  },
+	  "HTML-CSS": { availableFonts: ["TeX"] }
+	});
+  </script>
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full"></script>
+  
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contrastive Learning</title>
@@ -14,32 +33,6 @@
   <!-- Styles -->
   <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i%7CNoto+Serif:400,400i,700,700i&display=swap" rel="stylesheet">
   <link href="/assets/css/style.css" rel="stylesheet">
-  
-    <script type="text/x-mathjax-config">
-	MathJax.Hub.Config({
-	TeX: {
-		equationNumbers: {
-		autoNumber: "AMS"
-		}
-	},
-	tex2jax: {
-		inlineMath: [ ['$', '$'] ],
-		displayMath: [ ['$$', '$$'] ],
-		processEscapes: true,
-		}
-	});
-	MathJax.Hub.Register.MessageHook("Math Processing Error",function (message) {
-		alert("Math Processing Error: "+message[1]);
-	});
-	MathJax.Hub.Register.MessageHook("TeX Jax - parse error",function (message) {
-		alert("Math Processing Error: "+message[1]);
-	});
-</script>
-
-<script type="text/javascript" async
-	src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-  
 </head>
 <body>
 
@@ -104,6 +97,8 @@
 </ul>
 
 <p>이번 시간에는 Contrastive learning에 대해 알아본다.</p>
+
+<!--more-->
 
 <h3 id="contrastive-learning-이란">Contrastive Learning 이란?</h3>
 
@@ -203,7 +198,8 @@
         
         <span class="author-website"><a href="https://justgoodthemes.com" target="_blank" rel="noopener">https://justgoodthemes.com</a></span>
         
-      </div><!-- .author-details -->
+      </div> -->
+      <!-- .author-details-->
     <!-- </div>.author-box -->
   </article><!-- .post -->
 
@@ -222,7 +218,7 @@
   var disqus_developer = 0;
   (function () {
     var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-    dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+    dsq.src = 'https://' + 'https-bdml-study-github-io' + '.disqus.com/embed.js';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>

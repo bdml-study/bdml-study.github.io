@@ -5,107 +5,176 @@
         <description>BDML 세미나 정리 블로그</description>
         <link>http://localhost:4000/</link>
         <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-        <pubDate>Mon, 21 Nov 2022 15:40:17 +0900</pubDate>
-        <lastBuildDate>Mon, 21 Nov 2022 15:40:17 +0900</lastBuildDate>
+        <pubDate>Mon, 21 Nov 2022 17:38:38 +0900</pubDate>
+        <lastBuildDate>Mon, 21 Nov 2022 17:38:38 +0900</lastBuildDate>
         <generator>Jekyll v4.0.1</generator>
         
             <item>
-                <title>Contrastive Learning</title>
-                <description>&lt;h2 id=&quot;self-supervised-learning-in-computer-vision&quot;&gt;Self-Supervised Learning in Computer Vision&lt;/h2&gt;
+                <title>Sherlock: A Deep Learning Approach to Semantic Data Type Detection</title>
+                <description>&lt;p&gt;이번시간에는 &lt;strong&gt;Sherlock: A Deep Learning Approach to Semantic Data Type Detection&lt;/strong&gt; 논문을 리뷰해볼 예정입니다.&lt;/p&gt;
 
-&lt;p&gt;이미지 데이터를 위한 self-supervised learning 방법에는 크게 3가지 종류로 나뉜다.&lt;/p&gt;
+&lt;p&gt;이 논문은 테이블 데이터에서 컬럼의 내용만 보고 컬럼의 semantic type을 추출하기 위한 방법을 제시하고 있습니다.&lt;/p&gt;
 
-&lt;ul&gt;
-  &lt;li&gt;Contrastive learning&lt;/li&gt;
-  &lt;li&gt;Object-level representation learning&lt;/li&gt;
-  &lt;li&gt;Masked modeling&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;그럼 시작하겠습니다.&lt;/p&gt;
 
-&lt;p&gt;이번 시간에는 Contrastive learning에 대해 알아본다.&lt;/p&gt;
+&lt;!--more--&gt;
 
-&lt;h3 id=&quot;contrastive-learning-이란&quot;&gt;Contrastive Learning 이란?&lt;/h3&gt;
+&lt;h2 id=&quot;abstract&quot;&gt;Abstract&lt;/h2&gt;
 
-&lt;p&gt;데이터공간에서 latent 공간으로 매핑하는 매핑함수($\mathcal{X} \rightarrow \mathcal{Z}$)를 학습하는 학습 방법 중 하나로, 별도의 label이 필요하지 않은 self supervised learning 방법이다.&lt;/p&gt;
+&lt;p&gt;테이블 형태의 데이터에서 각 컬럼별 semantic type을 올바르게 감지하는것은 데이터 사이언스에서 매우 중요하다.&lt;/p&gt;
 
-&lt;p&gt;어떤 데이터 집합이 있고, 한 데이터 샘플이 있을 때, 유사해야 하는 샘플과는 latent 공간에서 거리를 가깝게, 달라야 하는 샘플과의 거리는 멀게 학습함으로써 매핑함수를 학습한다.&lt;/p&gt;
+&lt;p&gt;하지만 기존 데이터 분석 시스템은 semantic type을 감지하기 위해 dictionary lookup, 정규표현식 등에 의존하고 있다.&lt;/p&gt;
 
-&lt;p&gt;Contrastive learning loss는 보통 다음과 같이 생겼다.&lt;/p&gt;
+&lt;p&gt;이 방법들은 더티데이터에 강건하지 않고, 적은 수의 타입만 판별가능하다.&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;진짜 거리를 비교하는 형태&lt;br /&gt;
- 거리를 구하는 식을 바로 loss function에 적용하여 anchor와 positive는 가깝게, anchor와 negative와는 멀게 만든다. (예시: triplet loss)&lt;/p&gt;
+&lt;p&gt;이 논문에서는 sherlock이라는 multi-input deep neural network를 통해 semantic type을 감지한다.&lt;/p&gt;
 
-\[L = \text{dist}(x_{anc}, x_{pos}) - \text{dist}(x_{anc}, x_{neg})\]
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;NCE(Noise Contrastive Estimation) 형태&lt;br /&gt;
- NLP의 negative sampling처럼 negative sample을 여러개 두고 분자를 minimize, 분모를 maximize하면 anchor와 positive는 가깝게, anchor와 negative와는 멀게 만들 수 있다. (예시: InfoNCE)&lt;/p&gt;
+&lt;h2 id=&quot;introduction&quot;&gt;INTRODUCTION&lt;/h2&gt;
 
-\[L = \mathbb{E}_{x_{anc}}\left[ -\log \frac{\exp \left( \text{sim}(x_{anc}, x_{pos}) \right)}{\sum_{x_{neg}} \exp \left( \text{sim}(x_{anc}, x_{neg}) \right)} \right]\]
+&lt;p&gt;데이터 준비 및 분석 시스템은 데이터 컬럼의 타입을 정확하게 감지하는데 많은 영향을 받는다&lt;/p&gt;
 
-    &lt;p&gt;$\text{sim}(a, b)$의 경우, 보통 내적 또는 cosine similarity를 많이 쓴다.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;대부분의 시스템은 atomic type을 감지하지만, semantic type은 (atomic type에 비해)불균형적으로 더 강력하고 필수적이다&lt;/p&gt;
 
-&lt;h3 id=&quot;contrastive-learning의-학습방법&quot;&gt;Contrastive Learning의 학습방법&lt;/h3&gt;
+&lt;p&gt;semantic type은 column과 실제 개념간의 대응 관계를 설정하여 좀 더 명확하고 자세한(finer-grained) 설명을 제공한다&lt;/p&gt;
 
-&lt;p&gt;Contrastive learning은 다음과 같은 과정으로 학습된다.&lt;/p&gt;
+&lt;p&gt;하지만 대부분 type은 다음 표와 같이 표현하는 방법이 많다 (structual 하지 않다)&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;이미지에서 패치 $x$를 뽑는다.&lt;/li&gt;
-  &lt;li&gt;패치 $x$를 augmentation해서 패치 $\tilde{x}$를 얻는다.&lt;/li&gt;
-  &lt;li&gt;해당 패치 이외의 영역에서 다른 패치 $y$를 뽑는다.&lt;/li&gt;
-  &lt;li&gt;$x$가 anchor, $\tilde{x}$가 positive, $y$가 negative 샘플이 되어, contrastive learning을 통해 인코더를 학습한다.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/table1.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
 
-&lt;p&gt;contrastive learning은 보통 negative sample의 수가 많을수록 잘 동작한다.&lt;/p&gt;
+&lt;p&gt;그리고 기존의 정규표현식 매칭 방법과 dictionary lookup과 같은 방식은 단순 유형을 감지하는데 좋지만 복잡한 데이터 유형이나 더티 데이터에 매우 취약하다&lt;/p&gt;
 
-&lt;p&gt;그래서 한 이미지에서 anchor, positive, negative 샘플을 모두 뽑게 되며, anchor 패치 이외의 영역은 &lt;strong&gt;모두 negetive 패치&lt;/strong&gt;가 된다.&lt;/p&gt;
+&lt;p&gt;특히 데이터 프레임의 헤더명을 참고해서 데이터 타입을 알아내는 Tableau같은 어플리케이션에서 원래 있던 헤더를 제거하면 전혀 type 예측을 하지 못하는 것을 볼 수 있다&lt;/p&gt;
 
-&lt;p&gt;이러한 학습 과정은 작은 크기의 배치에서도 많은 양의 negative sample을 확보할 수 있게 한다.&lt;/p&gt;
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/figure2.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
 
-&lt;p&gt;가장 기본적인 형태의 contrastive learning은 다음 논문이다.(SimCLR, 2020)&lt;/p&gt;
+&lt;p&gt;최근 급부상중인 딥러닝 프레임워크가 대규모 코퍼스 학습에 매우 뛰어난 것에 영감을 받아 sherlock을 만들었다&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://www.notion.so/A-Simple-Framwork-for-Contrastive-Learning-of-Visual-Representation-09835248af6f4a23bfe16045dab8ed84&quot;&gt;A Simple Framwork for Contrastive Learning of Visual Representation&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;일단 &lt;code class=&quot;highlighter-rouge&quot;&gt;T2Dv2 Gold Standard&lt;/code&gt;에 따라서, DBpedia의 속성을 WebTable corpus와 일치시키는 78개의 semantic type을 고려했다&lt;/p&gt;
 
-&lt;p&gt;그런데 이 논문의 경우 negative sample을 하나의 배치 내에 있는 애들만 사용하므로, negative sample 폭이 너무 좁다.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;VizNet corpus&lt;/code&gt;를 통해 686,765개의 실제 데이터 컬럼을 추출했다&lt;/p&gt;
 
-&lt;p&gt;다음 논문은 메모리 뱅크를 이용하여 이전에 학습해둔 샘플을 queue에 저장해두고 negative sample로 활용한다. (MoCo, 2019)&lt;/p&gt;
+&lt;p&gt;이 논문에서 각 column은 column value들이 column header에 매칭되는 것으로 간주한다&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://www.notion.so/Momentum-Contrast-for-Unsupervised-Visual-Representation-Learning-7445c72ab3db40b7b3420771e59e5c32&quot;&gt;Momentum Contrast for Unsupervised Visual Representation Learning&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;1,588개의 특성을 추출하고 다양한 통계적, 의미론적 특성들을 설명한다&lt;/p&gt;
 
-&lt;h3 id=&quot;contrast-without-negative-samples&quot;&gt;Contrast Without Negative Samples&lt;/h3&gt;
+&lt;p&gt;그리고 column header를 semantic type의 label로 간주하여 semantic type 감지 문제를 multi class classification 문제로 바꿨다&lt;/p&gt;
 
-&lt;p&gt;위 두 논문의 문제점은 모두 negative sample을 사용해야 하기 때문에 생긴 문제이다.&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;본 논문의 주제는 데이터 분석가들을 위해 컬럼의 데이터를 보고 미리 의미있는 타입을 지정해서 카테고리화 하겠다 입니다.&lt;br /&gt;
+이 논문에서 주장하는 문제가 정확히 일치하는 테스크도 많겠지만 저는 이 논문에서 tabula data에서 컬럼별 특징을 추출하는 방법에 대해 조금 더 관심이 갔습니다.&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;아래 논문들은 negative sample 없이 positive sample만 이용하여 학습하는 기법에 대한 논문이다.&lt;/p&gt;
+&lt;h2 id=&quot;data&quot;&gt;DATA&lt;/h2&gt;
 
-&lt;p&gt;다만, positive sample만 사용하여 인코더를 학습할 경우 모든 데이터의 latent가 같아지는 현상이 발생한다.&lt;/p&gt;
+&lt;p&gt;대규모 저장소에서 column 및 feature를 추출하는 방법에 대한 설명&lt;/p&gt;
 
-&lt;p&gt;모든 데이터의 latent 사이의 거리를 0으로 만들면, loss가 0이 되기 때문이다.&lt;/p&gt;
+&lt;h3 id=&quot;data-collection&quot;&gt;Data Collection&lt;/h3&gt;
 
-&lt;p&gt;이를 막을 기법이 아래 논문들의 핵심이며, 각자의 차이점이다.&lt;/p&gt;
+&lt;p&gt;onolotgy 기반 &lt;code class=&quot;highlighter-rouge&quot;&gt;WordNet&lt;/code&gt;과 &lt;code class=&quot;highlighter-rouge&quot;&gt;DBpedia&lt;/code&gt;를 합쳐서 275개의 semantic type을 추출해낼 것이다&lt;/p&gt;
 
-&lt;p&gt;(2020)&lt;/p&gt;
+&lt;p&gt;결과적으로 275개의 type과 일치하는 6,146,940개의 column이 생성되었고 column header를 semantic type의 정답과 일치시키면 더 좋은 training data를 만들 수 있다&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://www.notion.so/Bootstrap-Your-Own-Latent-A-New-Approach-to-Self-Supervised-Learning-cf940bd163c448f4a9fc26cd1a917bc0&quot;&gt;Bootstrap Your Own Latent: A New Approach to Self-Supervised Learning&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;feature-extraction&quot;&gt;Feature Extraction&lt;/h3&gt;
 
-&lt;p&gt;(2021)&lt;/p&gt;
+&lt;p&gt;각 column은 가변 길이를 가졌고 엄청나게 다양하게 해석될 수 있기 때문에 신경망에 들어갈 Input으로 변환하기 위해 특징을 추출해야 한다&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://www.notion.so/Exploring-Simple-Siamese-Representation-Learning-f68fac6af1004534bdfe2adda7314f32&quot;&gt;Exploring Simple Siamese Representation Learning&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;global statistics 27개, aggregated character distribution 960개, pretrained word embedding 200개, self-trained paragraph vector 400개를 추출한다&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://www.notion.so/Barlow-Twins-Self-Supervised-Learning-via-Redundancy-Reduction-77d1f829c1a0417bac5ef48214fa7f73&quot;&gt;Barlow Twins: Self-Supervised Learning via Redundancy Reduction&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&quot;global-statistics&quot;&gt;global statistics&lt;/h4&gt;
 
-&lt;p&gt;Contrastive learning 최신 논문들 보면, 거의 모든 논문들이 latent가 하나로 수렴하는 것을 막는 것에 대한 연구가 대부분인듯하다.&lt;/p&gt;
+&lt;p&gt;high level의 통계적 특성을 추출한다 (column 엔트로피 등)&lt;/p&gt;
+
+&lt;p&gt;범주형 데이터 및 수치형 자료를 구분하도록 다음 27개의 feature를 추출한다&lt;/p&gt;
+
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/table8.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
+
+&lt;h4 id=&quot;character-level-distributions&quot;&gt;character-level distributions&lt;/h4&gt;
+
+&lt;p&gt;각 문자들의 분포를 설명하는 통계적 수치를 대표하는 feature를 추출한다&lt;/p&gt;
+
+&lt;p&gt;ascii의 96개 문자를 통해 10개씩 각 문자별로 통계치를 뽑아서 총 960개의 feature를 생성한다&lt;/p&gt;
+
+&lt;p&gt;any, all, mean, max 를 비롯해 ‘-’의 포함 여부, ‘/’의 갯수 평균 등등의 feature가 있다&lt;/p&gt;
+
+&lt;p&gt;wordembeddings
+    - 특정 semantic type은 특정 단어가 빈번하게 나올 수 있다
+    - 이러한 특징을 추출하기 위해 word embedding을 사용했다
+    - Glove를 사용했고 없는 단어는 생략, 여러 단어가 나오면 각 단어의 임베딩 값의 평균을 사용한다
+    - 그리고 column의 모든 값에 대한 임베딩 값의 평균, 최빈값, 중앙값 및 분산을 활용한다&lt;/p&gt;
+
+&lt;p&gt;paragraph vectors
+    - 각각의 column을 고정 길이의 벡터로 표현하기 위해 &lt;code class=&quot;highlighter-rouge&quot;&gt;PV-DBOW&lt;/code&gt;를 변형해서 사용했다&lt;/p&gt;
+
+&lt;h3 id=&quot;filtering-and-preprocessing&quot;&gt;Filtering and Preprocessing&lt;/h3&gt;
+
+&lt;p&gt;다음 그림에서 보듯이 type 마다 VizNet corpus에서 나타나는 빈도가 다르므로 최대 15000개 까지, 1000개 미만은 제외했다&lt;/p&gt;
+
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/figure3.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
+
+&lt;p&gt;column에서 15% 이상 Glove 사전에 있는 단어를 포함하지 않는다면 제외했다&lt;/p&gt;
+
+&lt;p&gt;마지막으로 임베딩이 잘 됐는지 확인하는 이진 특성 1개를 추가하여 총 1588개의 feaure를 활용한다&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;각 컬럼에서 특징을 추출하는 방법을 살펴보았습니다&lt;br /&gt;
+먼저 high-level 통계적 특성으로 조금 특징을 뽑아내고, 글자 단위로 통계적 특징들을 다시 뽑아냅니다.&lt;br /&gt;
+워드임베딩이랑 그래프벡터도 사용하는것을 볼 수 있습니다.&lt;br /&gt;
+tabular data 에서 컬럼 데이터를 통해 feature를 추출하려고 하면 어떻게 해야할까 막막했는데 여기서 좋은 방법을 제시해 준 것 같습니다.&lt;br /&gt;
+이와 같은 방법을 응용해서 더 다양한 feature를 뽑아낼 수도 있겠습니다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;methods&quot;&gt;Methods&lt;/h2&gt;
+
+&lt;h3 id=&quot;sherlock-a-multi-input-neural-network&quot;&gt;Sherlock: A Multi-input Neural Network&lt;/h3&gt;
+
+&lt;p&gt;예전 연구들은 feaure도 작고 모델도 너무 단순했다&lt;/p&gt;
+
+&lt;p&gt;멀티 인풋 아키텍처를 이용해 더 다양한 feature를 다룰 수 있다&lt;/p&gt;
+
+&lt;p&gt;27개의 통계적 특징을 가진 category를 제외하고 각각의 feature category에 대해 subnetwork를 통해 동일한 크기의 output을 뽑아낸다&lt;/p&gt;
+
+&lt;p&gt;그런 다음 통계적 특징을 가진 category와 나머지 모두를 연결해 최종 네트워크를 통과하게 만든다&lt;/p&gt;
+
+&lt;p&gt;과대적합을 피하기 위해 Dropout과 Batch Norm을 포함한다&lt;/p&gt;
+
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/figure4.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;모델은 인공신경망 치고 간단한 모델입니다
+실험결과는 더 볼 필요없이 잘 나왔다고 했지만 이번 논문에서 주의 깊게 살펴볼 부분은 컬럼데이터에서 어떻게 feature를 뽑아내서 인공신경망에 넣을 수 있도록 만들었냐가 핵심인 것 같습니다.&lt;br /&gt;
+마지막으로 전체적인 모델에 대한 모식도를 보고 논문 리뷰를 마치도록 하겠습니다.&lt;br /&gt;
+감사합니다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;figure class=&quot;image-card width-wide caption&quot;&gt;
+  &lt;img src=&quot;/images/seminar02/model.png&quot; alt=&quot;table1&quot; /&gt;
+  
+&lt;/figure&gt;
 </description>
                 <pubDate>Fri, 11 Nov 2022 00:00:00 +0900</pubDate>
                 <link>http://localhost:4000/seminar-02</link>
                 <guid isPermaLink="true">http://localhost:4000/seminar-02</guid>
                 
-                <category>self-supervised learning</category>
+                <category>database</category>
                 
-                <category>contrastive learning</category>
+                <category>tabula data</category>
+                
+                <category>column embedding</category>
                 
                 
             </item>
@@ -123,6 +192,8 @@
 &lt;/ul&gt;
 
 &lt;p&gt;이번 시간에는 Contrastive learning에 대해 알아본다.&lt;/p&gt;
+
+&lt;!--more--&gt;
 
 &lt;h3 id=&quot;contrastive-learning-이란&quot;&gt;Contrastive Learning 이란?&lt;/h3&gt;
 

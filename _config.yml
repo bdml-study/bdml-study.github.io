@@ -15,7 +15,7 @@ title: "Big Data Mining Lab"
 description: "BDML 세미나 정리 블로그"
 
 # The subpath of your site, e.g. /blog, for generating urls.
-baseurl: "https://bdml-study.github.io"
+baseurl: ""
 
 # The base hostname & protocol of your site for where absolute urls are needed.
 url: "https://bdml-study.github.io"
@@ -41,7 +41,7 @@ navigation:
   #   url: /tags/
 
 # The shortname for your Disqus site to enable comments.
-disqus: justgoodthemes
+disqus: bdml
 
 # Colors
 accent_color: '#9bbb59'
@@ -65,6 +65,7 @@ permalink: /:title
 
 # Conversion
 markdown: kramdown
+mathjax: true
 highlighter: rouge
 lsi: false
 excerpt_separator: "\n\n"

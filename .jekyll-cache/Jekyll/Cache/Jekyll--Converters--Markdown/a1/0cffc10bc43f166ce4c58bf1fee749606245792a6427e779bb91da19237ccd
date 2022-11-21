@@ -1,0 +1,94 @@
+I"�<p>이번시간에는 <strong>Sherlock: A Deep Learning Approach to Semantic Data Type Detection</strong> 논문을 리뷰해볼 예정입니다.</p>
+
+<p>잘 부탁 드리겠습니다.</p>
+
+<h2 id="abstract">Abstract</h2>
+
+<p>이미지 데이터를 위한 self-supervised learning 방법에는 크게 3가지 종류로 나뉜다.</p>
+
+<ul>
+  <li>Contrastive learning</li>
+  <li>Object-level representation learning</li>
+  <li>Masked modeling</li>
+</ul>
+
+<p>이번 시간에는 Contrastive learning에 대해 알아본다.</p>
+
+<!--more-->
+
+<h3 id="contrastive-learning-이란">Contrastive Learning 이란?</h3>
+
+<p>데이터공간에서 latent 공간으로 매핑하는 매핑함수($\mathcal{X} \rightarrow \mathcal{Z}$)를 학습하는 학습 방법 중 하나로, 별도의 label이 필요하지 않은 self supervised learning 방법이다.</p>
+
+<p>어떤 데이터 집합이 있고, 한 데이터 샘플이 있을 때, 유사해야 하는 샘플과는 latent 공간에서 거리를 가깝게, 달라야 하는 샘플과의 거리는 멀게 학습함으로써 매핑함수를 학습한다.</p>
+
+<p>Contrastive learning loss는 보통 다음과 같이 생겼다.</p>
+
+<ol>
+  <li>
+    <p>진짜 거리를 비교하는 형태<br />
+ 거리를 구하는 식을 바로 loss function에 적용하여 anchor와 positive는 가깝게, anchor와 negative와는 멀게 만든다. (예시: triplet loss)</p>
+
+\[L = \text{dist}(x_{anc}, x_{pos}) - \text{dist}(x_{anc}, x_{neg})\]
+  </li>
+  <li>
+    <p>NCE(Noise Contrastive Estimation) 형태<br />
+ NLP의 negative sampling처럼 negative sample을 여러개 두고 분자를 minimize, 분모를 maximize하면 anchor와 positive는 가깝게, anchor와 negative와는 멀게 만들 수 있다. (예시: InfoNCE)</p>
+
+\[L = \mathbb{E}_{x_{anc}}\left[ -\log \frac{\exp \left( \text{sim}(x_{anc}, x_{pos}) \right)}{\sum_{x_{neg}} \exp \left( \text{sim}(x_{anc}, x_{neg}) \right)} \right]\]
+
+    <p>$\text{sim}(a, b)$의 경우, 보통 내적 또는 cosine similarity를 많이 쓴다.</p>
+  </li>
+</ol>
+
+<h3 id="contrastive-learning의-학습방법">Contrastive Learning의 학습방법</h3>
+
+<p>Contrastive learning은 다음과 같은 과정으로 학습된다.</p>
+
+<ol>
+  <li>이미지에서 패치 $x$를 뽑는다.</li>
+  <li>패치 $x$를 augmentation해서 패치 $\tilde{x}$를 얻는다.</li>
+  <li>해당 패치 이외의 영역에서 다른 패치 $y$를 뽑는다.</li>
+  <li>$x$가 anchor, $\tilde{x}$가 positive, $y$가 negative 샘플이 되어, contrastive learning을 통해 인코더를 학습한다.</li>
+</ol>
+
+<p>contrastive learning은 보통 negative sample의 수가 많을수록 잘 동작한다.</p>
+
+<p>그래서 한 이미지에서 anchor, positive, negative 샘플을 모두 뽑게 되며, anchor 패치 이외의 영역은 <strong>모두 negetive 패치</strong>가 된다.</p>
+
+<p>이러한 학습 과정은 작은 크기의 배치에서도 많은 양의 negative sample을 확보할 수 있게 한다.</p>
+
+<p>가장 기본적인 형태의 contrastive learning은 다음 논문이다.(SimCLR, 2020)</p>
+
+<p><a href="https://www.notion.so/A-Simple-Framwork-for-Contrastive-Learning-of-Visual-Representation-09835248af6f4a23bfe16045dab8ed84">A Simple Framwork for Contrastive Learning of Visual Representation</a></p>
+
+<p>그런데 이 논문의 경우 negative sample을 하나의 배치 내에 있는 애들만 사용하므로, negative sample 폭이 너무 좁다.</p>
+
+<p>다음 논문은 메모리 뱅크를 이용하여 이전에 학습해둔 샘플을 queue에 저장해두고 negative sample로 활용한다. (MoCo, 2019)</p>
+
+<p><a href="https://www.notion.so/Momentum-Contrast-for-Unsupervised-Visual-Representation-Learning-7445c72ab3db40b7b3420771e59e5c32">Momentum Contrast for Unsupervised Visual Representation Learning</a></p>
+
+<h3 id="contrast-without-negative-samples">Contrast Without Negative Samples</h3>
+
+<p>위 두 논문의 문제점은 모두 negative sample을 사용해야 하기 때문에 생긴 문제이다.</p>
+
+<p>아래 논문들은 negative sample 없이 positive sample만 이용하여 학습하는 기법에 대한 논문이다.</p>
+
+<p>다만, positive sample만 사용하여 인코더를 학습할 경우 모든 데이터의 latent가 같아지는 현상이 발생한다.</p>
+
+<p>모든 데이터의 latent 사이의 거리를 0으로 만들면, loss가 0이 되기 때문이다.</p>
+
+<p>이를 막을 기법이 아래 논문들의 핵심이며, 각자의 차이점이다.</p>
+
+<p>(2020)</p>
+
+<p><a href="https://www.notion.so/Bootstrap-Your-Own-Latent-A-New-Approach-to-Self-Supervised-Learning-cf940bd163c448f4a9fc26cd1a917bc0">Bootstrap Your Own Latent: A New Approach to Self-Supervised Learning</a></p>
+
+<p>(2021)</p>
+
+<p><a href="https://www.notion.so/Exploring-Simple-Siamese-Representation-Learning-f68fac6af1004534bdfe2adda7314f32">Exploring Simple Siamese Representation Learning</a></p>
+
+<p><a href="https://www.notion.so/Barlow-Twins-Self-Supervised-Learning-via-Redundancy-Reduction-77d1f829c1a0417bac5ef48214fa7f73">Barlow Twins: Self-Supervised Learning via Redundancy Reduction</a></p>
+
+<p>Contrastive learning 최신 논문들 보면, 거의 모든 논문들이 latent가 하나로 수렴하는 것을 막는 것에 대한 연구가 대부분인듯하다.</p>
+:ET
