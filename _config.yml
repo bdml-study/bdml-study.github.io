@@ -15,10 +15,10 @@ title: "Big Data Mining Lab"
 description: "BDML 세미나 정리 블로그"
 
 # The subpath of your site, e.g. /blog, for generating urls.
-baseurl: ""
+baseurl: "https://bdml-study.github.io"
 
 # The base hostname & protocol of your site for where absolute urls are needed.
-url: "https://scriptor-jekyll.netlify.com"
+url: "https://bdml-study.github.io"
 
 # Favicon
 favicon: images/favicon.png
