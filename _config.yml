@@ -74,3 +74,6 @@ incremental: false
 sass:
   sass_dir: _sass
   style: compressed
+
+timezone: Asia/Seoul
+future: true
